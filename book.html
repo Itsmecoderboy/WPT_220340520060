@@ -1,0 +1,136 @@
+<html>
+	<head>
+		<title>Book Details</title>
+	</head>
+<body>
+
+	<label for="bookid">Book ID:</label>
+	<input type="text" id="bookid">
+	<span id="msg">Message</span><br/><br/>
+	<label for="bookname">Book Name:</label>
+	<input type="text" id="bookname"><br/><br/>
+	<label for="price">Price:</label>
+	<input type="text" id="price"><br/><br/>
+	<button id="addbook">Add a book</button>
+	<hr/>
+
+	<p id="showall">Show all books here</p>
+
+
+
+</body>
+
+<script src="jquery-3.5.1.min.js"></script>
+<script>//our scrip will come here 
+
+$(document).ready(function()
+{
+		console.log("Lets do some Adventure");
+
+
+		//Function to show list of books Below the Button
+		function showAllBooks(){
+			let dbparams={
+				data:{},
+				url:'http://localhost:8081/ShowAllBooks',
+				type:'get',
+				dataType:'json',
+				success:(serverResponse)=>{
+					console.log("success serverResponse");
+					console.log(serverResponse);
+
+					let bookList=" ";
+					for(let i=0; i<serverResponse.length;i++){
+						bookList += "<br/>"+serverResponse[i].bookid+" "+serverResponse[i].bookname+" "
+						+serverResponse[i].price;
+					}
+
+					$('#showall').html(bookList);
+				},
+				error:(serverResponse)=>{
+
+				}
+			};
+
+			$.ajax(dbparams);
+		}
+
+
+		//Blur event on BookId text box.
+		$('#bookid').blur(()=>{
+			console.log('Inside blur event');
+
+			let input=$('#bookid').val();
+			console.log("input is "+input);
+
+			let dbparams={
+				data:{x:input},
+				url:'http://localhost:8081/checkBookId',
+				type:'get',
+				dataType:'json',
+				success:(serverResponse)=>{
+					console.log("success serverResponse");
+					console.log(serverResponse);
+
+					if(serverResponse.status==true){
+						$('#msg').text("Book is present");
+						$('#bookname').val(serverResponse.bookDetails.bookname);
+						$('#price').val(serverResponse.bookDetails.price);
+					}else{
+						$('#msg').text("Book Id not found");
+						$('#bookname').val(" ");
+						$('#price').val(" ");
+					}
+				},
+				error:(serverResponse)=>{
+					console.log("Error in serverResponse"+serverResponse);
+				}
+			};
+
+			showAllBooks();
+			$.ajax(dbparams);   //AJAX Call
+
+		});
+
+
+		// Click event on add a Book Button
+		$('#addbook').click(()=>{
+			console.log('Inside click event of add book');
+
+			let input={x:$('#bookid').val(), y:$('#bookname').val(), z:$('#price').val()};
+			console.log(input);
+
+			let dbparams={
+				data:input,
+				url:'http://localhost:8081/addBook',
+				type:'get',
+				dataType:'json',
+				success:(serverResponse)=>{
+					console.log("success serverResponse");
+					console.log(serverResponse);
+
+					if(serverResponse.status==true){
+						 $('#msg').text("Book added successfully");
+						
+					}else{
+						$('#msg').text("Book not added");
+						
+					}
+				},
+				error:(serverResponse)=>{
+					console.log("Error in serverResponse"+serverResponse);
+				}
+			};
+			$.ajax(dbparams);		//AJAX Call
+			showAllBooks();
+		});
+
+		// showAllBooks();
+
+		
+});
+
+</script>
+
+
+</html>
